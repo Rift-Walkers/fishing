@@ -1,37 +1,41 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>3D Fishing/Gambling Game</title>
-    <!-- Include Supabase client and Three.js (global libraries for now) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <!-- Login form -->
-    <div id="login">
-      <h3>Login</h3>
-      <input type="email" id="loginEmail" placeholder="Email" /><br />
-      <input type="password" id="loginPassword" placeholder="Password" /><br />
-      <button id="loginBtn">Login</button>
-    </div>
-    <!-- Registration form -->
-    <div id="register">
-      <h3>Register</h3>
-      <input type="email" id="registerEmail" placeholder="Email" /><br />
-      <input type="password" id="registerPassword" placeholder="Password" /><br />
-      <button id="registerBtn">Register</button>
-    </div>
-    <!-- Leaderboard display -->
-    <div id="leaderboard">
-      <h3>Leaderboard</h3>
-      <ul id="leaderboardList"></ul>
-    </div>
-    <!-- Container for the 3D game -->
-    <div id="gameContainer"></div>
+	<head>
+		<meta charset="UTF-8" />
+		<title>3D Fishing/Gambling Game</title>
+		<!-- Include Supabase client and Three.js (global libraries for now) -->
+		<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<!-- Login form -->
+		<div id="login">
+			<h3>Login</h3>
+			<input type="email" id="loginEmail" placeholder="Email" /><br />
+			<input type="password" id="loginPassword" placeholder="Password" /><br />
+			<button id="loginBtn">Login</button>
+		</div>
+		<!-- Registration form -->
+		<div id="register">
+			<h3>Register</h3>
+			<input type="email" id="registerEmail" placeholder="Email" /><br />
+			<input
+				type="password"
+				id="registerPassword"
+				placeholder="Password"
+			/><br />
+			<button id="registerBtn">Register</button>
+		</div>
+		<!-- Leaderboard display -->
+		<div id="leaderboard">
+			<h3>Leaderboard</h3>
+			<ul id="leaderboardList"></ul>
+		</div>
+		<!-- Container for the 3D game -->
+		<div id="gameContainer"></div>
 
-    <!-- Main module -->
-    <script type="module" src="./js/main.js"></script>
-  </body>
+		<!-- Main module -->
+		<script type="module" src="./js/main.js"></script>
+	</body>
 </html>
