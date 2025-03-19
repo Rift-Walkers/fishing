@@ -1,5 +1,5 @@
 // js/fishing_game.js
-import * as THREE from 'three';
+// import * as THREE from 'three';
 
 export function startGame() {
     // Create the scene
