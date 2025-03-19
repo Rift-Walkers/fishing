@@ -1,24 +1,33 @@
-// js/main.js
-import { loginUser, registerUser } from "./auth.js";
 import { startGame } from "./lake.js";
-import { loadLeaderboard } from "./leaderboard.js";
+import { loginUser, registerUser } from "./auth.js";
+import { loadLeaderboard } from "./leaderBoard.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-	// Attach event listener for Login
-	document.getElementById("loginBtn").addEventListener("click", async () => {
-		const loggedIn = await loginUser();
-		if (loggedIn) {
-			// Hide the login and register forms
-			document.getElementById("login").style.display = "none";
-			document.getElementById("register").style.display = "none";
-			// Start the game and load the leaderboard
-			startGame();
-			loadLeaderboard();
-		}
-	});
+	// Check if the user is already logged in
+	if (localStorage.getItem("isLoggedIn") === "true") {
+		startGame();
+		loadLeaderboard();
+	}
 
-	// Attach event listener for Register
-	document.getElementById("registerBtn").addEventListener("click", async () => {
-		await registerUser();
-	});
+	const loginBtn = document.getElementById("loginBtn");
+	const registerBtn = document.getElementById("registerBtn");
+
+	if (loginBtn) {
+		loginBtn.addEventListener("click", async () => {
+			const loggedIn = await loginUser();
+			if (loggedIn) {
+				localStorage.setItem("isLoggedIn", "true"); // Store login state
+				document.getElementById("login").style.display = "none";
+				document.getElementById("register").style.display = "none";
+				startGame();
+				loadLeaderboard();
+			}
+		});
+	}
+
+	if (registerBtn) {
+		registerBtn.addEventListener("click", async () => {
+			await registerUser();
+		});
+	}
 });

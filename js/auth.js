@@ -7,7 +7,7 @@ export async function registerUser() {
 	if (error) {
 		alert("Registration Error: " + error.message);
 	} else {
-		alert("Registration successful! Check your email for confirmation.");
+		alert("Registration successful!");
 	}
 }
 
