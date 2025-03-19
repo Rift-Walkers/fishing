@@ -1,6 +1,3 @@
-// js/fishing_game.js
-// import * as THREE from 'three';
-
 export function startGame() {
     // Create the scene
     const scene = new THREE.Scene();
