@@ -1,0 +1,31 @@
+body {
+	margin: 0;
+	overflow: hidden;
+}
+/* Styling for login/register forms and leaderboard */
+#login,
+#register {
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	background: rgba(255, 255, 255, 0.9);
+	padding: 10px;
+	border-radius: 4px;
+	z-index: 10;
+}
+#register {
+	top: 200px;
+}
+#leaderboard {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	background: rgba(255, 255, 255, 0.9);
+	padding: 10px;
+	border-radius: 4px;
+	z-index: 10;
+}
+#gameContainer {
+	width: 100vw;
+	height: 100vh;
+}
