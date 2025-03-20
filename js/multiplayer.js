@@ -1,4 +1,3 @@
-// js/multiplayer.js
 export function initMultiplayer(player) {
 	// Placeholder for multiplayer initialization logic
 	console.log("Multiplayer initialized for player:", player);

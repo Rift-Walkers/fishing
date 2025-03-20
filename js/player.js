@@ -1,6 +1,3 @@
-// js/player.js
-// import * as THREE from "three";
-
 export class Player {
 	constructor(scene, camera) {
 		this.scene = scene;
