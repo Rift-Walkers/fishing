@@ -33,7 +33,6 @@ export function startGame() {
 			lightColor = 0x9999ff;
 		}
 		scene.background = new THREE.Color(backgroundColor);
-		// Remove any existing ambient lights and add a new one
 		scene.children = scene.children.filter(
 			(obj) => !(obj instanceof THREE.AmbientLight)
 		);
@@ -44,20 +43,23 @@ export function startGame() {
 	updateBackground();
 	setInterval(updateBackground, 300000);
 
-	// Create environment objects
+	// Create the main grass terrain
 	const grassGeometry = new THREE.PlaneGeometry(200, 200);
-	const grassMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+	const grassMaterial = new THREE.MeshBasicMaterial({ color: "#443627" });
 	const grass = new THREE.Mesh(grassGeometry, grassMaterial);
 	grass.rotation.x = -Math.PI / 2;
 	scene.add(grass);
 
-	const lakeGeometry = new THREE.CircleGeometry(50, 32);
-	const lakeMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-	const lake = new THREE.Mesh(lakeGeometry, lakeMaterial);
-	lake.rotation.x = -Math.PI / 2;
-	lake.position.set(0, 0.1, 0);
-	scene.add(lake);
+	// Generate randomized but consistent grass blades
+	generateGrass(scene);
 
+	// Generate tree border to block the edges
+	generateTrees(scene);
+
+	// Create the lake with depth effect
+	createLake(scene);
+
+	// Create dock
 	const dockWidth = 10;
 	const dockLength = 15;
 	const dockHeight = 2;
@@ -67,6 +69,7 @@ export function startGame() {
 	dock.position.set(0, 1, 60);
 	scene.add(dock);
 
+	// Dock pillars
 	const pillarGeometry = new THREE.CylinderGeometry(1, 1, 5, 16);
 	const pillarMaterial = new THREE.MeshBasicMaterial({ color: 0x5a3d1a });
 	const pillarPositions = [
@@ -81,25 +84,6 @@ export function startGame() {
 		scene.add(pillar);
 	});
 
-	// (Optional) Static fishing rod parts for visual flavor
-	const handleGeometry = new THREE.CylinderGeometry(0.3, 0.3, 5);
-	const handleMaterial = new THREE.MeshBasicMaterial({ color: 0x8b4513 });
-	const handle = new THREE.Mesh(handleGeometry, handleMaterial);
-	handle.position.set(0, 5, 55);
-	scene.add(handle);
-
-	const rodGeometry = new THREE.CylinderGeometry(0.1, 0.1, 4);
-	const rodMaterial = new THREE.MeshBasicMaterial({ color: 0x222222 });
-	const rod = new THREE.Mesh(rodGeometry, rodMaterial);
-	rod.position.set(0, 6, 58);
-	scene.add(rod);
-
-	const lineGeometry = new THREE.CylinderGeometry(0.02, 0.02, 4);
-	const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-	const line = new THREE.Mesh(lineGeometry, lineMaterial);
-	line.position.set(0, 7, 58);
-	scene.add(line);
-
 	// Create player and fishing instances
 	const player = new Player(scene, camera);
 	const fishing = new Fishing(scene, player, camera);
@@ -110,17 +94,119 @@ export function startGame() {
 	// Main animation loop
 	function animate() {
 		requestAnimationFrame(animate);
-
-		// Update player movement and camera mode
 		player.update();
-
-		// Update fishing logic (line position and catch check)
 		fishing.update();
-
-		// Update multiplayer state (placeholder)
 		updateMultiplayer(player);
-
 		renderer.render(scene, camera);
 	}
 	animate();
+}
+
+function seededRandom(seed) {
+	let x = Math.sin(seed) * 10000;
+	return x - Math.floor(x);
+}
+
+/**
+ * Create a lake with a depth effect using multiple layers
+ */
+function createLake(scene) {
+	const lakeCenter = new THREE.Vector3(0, 0.1, 0);
+	const lakeRadius = 50;
+	const numLayers = 5; // More layers = smoother gradient
+	const colorStart = new THREE.Color(0x3399ff); // Light Blue
+	const colorEnd = new THREE.Color(0x000066); // Dark Blue
+
+	for (let i = 0; i < numLayers; i++) {
+		const fraction = i / (numLayers - 1); // Progress from 0 to 1
+		const radius = lakeRadius * (1 - fraction * 0.2); // Shrink inner layers
+		const layerColor = colorStart.clone().lerp(colorEnd, fraction); // Interpolate color
+
+		// Create water layer
+		const layerGeometry = new THREE.CircleGeometry(radius, 32);
+		const layerMaterial = new THREE.MeshBasicMaterial({ color: layerColor });
+		const lakeLayer = new THREE.Mesh(layerGeometry, layerMaterial);
+
+		lakeLayer.rotation.x = -Math.PI / 2;
+		lakeLayer.position.set(lakeCenter.x, lakeCenter.y + i * 0.01, lakeCenter.z); // Slight offset to avoid z-fighting
+		scene.add(lakeLayer);
+	}
+}
+
+/**
+ * Generate consistent grass blade placements
+ */
+function generateGrass(scene) {
+	const numBlades = 5000; // Adjust for more/less density
+	const seed = 42;
+
+	for (let i = 0; i < numBlades; i++) {
+		const angle = seededRandom(i + seed) * Math.PI * 2;
+		const radius = seededRandom(i + seed * 2) * 100; // Spread across the grass area
+		const x = Math.cos(angle) * radius;
+		const z = Math.sin(angle) * radius;
+
+		// Ensure blades don't appear in the lake (radius 50)
+		if (Math.sqrt(x ** 2 + z ** 2) < 50) continue;
+
+		// Random height between 0.3 and 0.7
+		const height = 0.3 + seededRandom(i + seed * 3) * 0.3;
+
+		// Slight color variation for realism
+		const colorVariation = 0.2 * seededRandom(i + seed * 4);
+		const grassColor = new THREE.Color(0x228b22).lerp(
+			new THREE.Color(0x008000),
+			colorVariation
+		);
+
+		// Create a thin cylinder (grass blade)
+		const grassGeometry = new THREE.CylinderGeometry(0.05, 0.05, height, 6);
+		const grassMaterial = new THREE.MeshBasicMaterial({ color: grassColor });
+		const grassBlade = new THREE.Mesh(grassGeometry, grassMaterial);
+
+		// Position the grass blade
+		grassBlade.position.set(x, height / 2, z);
+		scene.add(grassBlade);
+	}
+}
+
+/**
+ * Generate trees around the edges to block the view
+ */
+function generateTrees(scene) {
+	const treeDensity = 100; // Controls how many trees per side
+
+	for (let i = 0; i < treeDensity; i++) {
+		const edgePositions = [
+			[-100, seededRandom(i) * 2 + 5, i * 2 - 100], // Left side
+			[100, seededRandom(i + 50) * 2 + 5, i * 2 - 100], // Right side
+			[i * 2 - 100, seededRandom(i + 100) * 2 + 5, -100], // Top side
+			[i * 2 - 100, seededRandom(i + 150) * 2 + 5, 100], // Bottom side
+		];
+
+		edgePositions.forEach(([x, y, z], index) => {
+			// Create trunk
+			const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.5, 5, 8);
+			const trunkMaterial = new THREE.MeshBasicMaterial({ color: 0x8b4513 });
+			const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+			trunk.position.set(x, 2.5, z);
+			scene.add(trunk);
+
+			// Generate slight color variation for the leaves
+			const colorVariation = 0.2 * seededRandom(index + 300);
+			const leavesColor = new THREE.Color(0x228b22).lerp(
+				new THREE.Color(0x008000),
+				colorVariation
+			);
+
+			// Create leaves
+			const leavesGeometry = new THREE.SphereGeometry(3, 8, 8);
+			const leavesMaterial = new THREE.MeshBasicMaterial({
+				color: leavesColor,
+			});
+			const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+			leaves.position.set(x, y + 1, z);
+			scene.add(leaves);
+		});
+	}
 }

@@ -6,11 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Check if the user is already logged in
 	if (localStorage.getItem("isLoggedIn") === "true") {
 		startGame();
-		loadLeaderboard();
 	}
 
 	const loginBtn = document.getElementById("loginBtn");
 	const registerBtn = document.getElementById("registerBtn");
+	const leaderboard = document.getElementById("leaderboard");
 
 	if (loginBtn) {
 		loginBtn.addEventListener("click", async () => {
@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				document.getElementById("login").style.display = "none";
 				document.getElementById("register").style.display = "none";
 				startGame();
-				loadLeaderboard();
 			}
 		});
 	}
@@ -30,4 +29,22 @@ document.addEventListener("DOMContentLoaded", () => {
 			await registerUser();
 		});
 	}
+
+	// Hide leaderboard initially
+	leaderboard.style.display = "none";
+
+	// Event listener for showing/hiding leaderboard when pressing Tab
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Tab") {
+			e.preventDefault(); // Prevent browser tab switch
+			leaderboard.style.display = "block";
+			loadLeaderboard(); // Load top 10 players dynamically
+		}
+	});
+
+	document.addEventListener("keyup", (e) => {
+		if (e.key === "Tab") {
+			leaderboard.style.display = "none";
+		}
+	});
 });
