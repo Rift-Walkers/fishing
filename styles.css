@@ -33,16 +33,12 @@ body {
 	transform: translate(-50%, -50%);
 	width: 40%;
 	max-width: 500px;
-	background: linear-gradient(
-		to bottom,
-		#2a6b2a,
-		#154d15
-	); /* Dark green gradient */
+	background: rgba(42, 107, 42, 0.8);
 	padding: 20px;
 	border-radius: 8px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 	text-align: center;
-	display: none; /* Hidden by default */
+	display: none;
 	color: white;
 	font-family: Arial, sans-serif;
 }
