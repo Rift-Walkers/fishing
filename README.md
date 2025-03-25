@@ -38,6 +38,14 @@ Basic entities:
 Simple web stack:
     Frontend (React + Tailwind) | v Backend (Flask or FastAPI) | v Database (SQLite or PostgreSQL)
 
+     Software/Service       | Free Tier Details                              | Paid Costs After Free Tier                          |
+|-------------------------|-----------------------------------------------|----------------------------------------------------|
+| PostgreSQL             | Supabase: 500MB; AWS RDS: 20GB SSD + t2.micro | $25/month (Supabase Pro); ~$15/month (AWS RDS)    |
+| AWS S3                 | 5GB storage + free requests                   | $0.023/GB/month; alternatives cheaper             |
+| Redis                  | Upstash: Free up to 10K requests/day          | $5–$10/month depending on usage                   |
+| Backend Framework      | FastAPI/Express.js are free                   | No additional cost                                |
+| Hosting                | AWS EC2 t2.micro free (750 hours)             | ~$5–$10/month on VPS after free tier              |
+
 
 - Cast a line → Randomized result from backend
 - Save fish caught to player’s inventory
