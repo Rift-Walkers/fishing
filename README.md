@@ -92,3 +92,6 @@ Simple web stack:
 - Keep the logic simple but expandable (loot tables, daily rewards, etc.)
 - Optional: Add animated water background and smooth cast/reel animations
 - Optional: Use local storage or session ID for player save before login system
+
+
+
