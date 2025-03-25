@@ -70,6 +70,10 @@ Frontend (React + Tailwind) | Backend (FastAPI) | Database (PostgreSQL)
   - Cast button → triggers animation + random fish catch
   - Pop-up shows caught fish (image, name, rarity)
 
+-  **Leaderboard**:
+    - Leaderboard of fish caught based off weight and rarity (top 10).
+    - Tab to see details (name, rarity, weight).
+
 - **Inventory Page**
   - Grid of fish caught
   - Hover to see details (name, rarity, value)
