@@ -35,8 +35,7 @@ Basic entities:
 
 ## 🛠 System Design Sketch
 
-Simple web stack:
-    Frontend (React + Tailwind) | Backend (FastAPI) | Database (PostgreSQL)
+Frontend (React + Tailwind) | Backend (FastAPI) | Database (PostgreSQL)
 
 |     Software/Service    | Free Tier Details                             | Paid Costs After Free Tier                         |
 |-------------------------|-----------------------------------------------|----------------------------------------------------|
