@@ -9,9 +9,12 @@ export class Fishing {
 		this.fishingLine = null;
 		this.fishingStartTime = null;
 		this.fishCaught = false;
-		this.fish = null; // Holds the fish instance
+		this.fish = null;
+
+		this.caughtRarities = {}; // Track how many of each rarity
 
 		this.setupKeyListener();
+		this.createPopupUI();
 	}
 
 	setupKeyListener() {
@@ -21,7 +24,6 @@ export class Fishing {
 			}
 		});
 		document.addEventListener("keyup", (e) => {
-			// Cancel fishing if "F" is released early
 			if (e.key.toLowerCase() === "f" && this.isFishing && !this.fishCaught) {
 				if (this.fishingLine) {
 					this.scene.remove(this.fishingLine);
@@ -34,33 +36,28 @@ export class Fishing {
 
 	startFishing() {
 		const playerPos = this.player.mesh.position;
-		const playerRotation = this.player.mesh.rotation.y; // Get player's facing direction
+		const playerRotation = this.player.mesh.rotation.y;
 		const lakeCenter = new THREE.Vector3(0, 0, 0);
 		const lakeRadius = 50;
 
-		// Calculate cast position in front of the player
 		const castX = playerPos.x - Math.sin(playerRotation) * 5;
 		const castZ = playerPos.z - Math.cos(playerRotation) * 5;
 		const castDistance = Math.sqrt(castX ** 2 + castZ ** 2);
 		const landsInWater = castDistance < lakeRadius;
 
-		// Ensure fishing only works if the player is facing the lake
 		const toLakeVector = new THREE.Vector3(
 			lakeCenter.x - playerPos.x,
 			0,
 			lakeCenter.z - playerPos.z
 		).normalize();
-
 		const playerForwardVector = new THREE.Vector3(
 			-Math.sin(playerRotation),
 			0,
 			-Math.cos(playerRotation)
 		);
-
 		const angleToLake = toLakeVector.dot(playerForwardVector);
 
 		if (!landsInWater || angleToLake < 0.7) {
-			// 0.7 ensures player is mostly facing the lake
 			console.log("You must be facing the water to fish!");
 			return;
 		}
@@ -69,7 +66,6 @@ export class Fishing {
 		this.fishCaught = false;
 		this.fishingStartTime = Date.now();
 
-		// Draw fishing line in front of the player
 		const start = new THREE.Vector3().copy(this.player.mesh.position);
 		const end = new THREE.Vector3(
 			start.x - Math.sin(playerRotation) * 10,
@@ -95,7 +91,6 @@ export class Fishing {
 				this.fishingLine.geometry.setFromPoints([start, end]);
 			}
 
-			// Trigger fish catch after 5 seconds
 			const elapsed = (Date.now() - this.fishingStartTime) / 1000;
 			if (elapsed >= 5 && !this.fishCaught) {
 				this.catchFish();
@@ -104,15 +99,17 @@ export class Fishing {
 	}
 
 	catchFish() {
-		// Remove fishing line
 		if (this.fishingLine) {
 			this.scene.remove(this.fishingLine);
 			this.fishingLine = null;
 		}
 		this.fishCaught = true;
 
-		// Spawn fish and animate it
-		this.fish = this.spawnFish();
+		const fishType = this.getRandomFishType();
+		this.incrementCaught(fishType.rarity);
+		this.showPopup(`You caught a ${fishType.rarity} fish!`);
+
+		this.fish = this.spawnFish(fishType);
 		const targetY = 5;
 		const animateFish = () => {
 			if (this.fish && this.fish.position.y < targetY) {
@@ -131,45 +128,87 @@ export class Fishing {
 		animateFish();
 	}
 
-	spawnFish() {
+	getRandomFishType() {
+		const roll = Math.random() * 100;
+		if (roll < 2) return { rarity: "Legendary", color: 0xffd700 };
+		if (roll < 10) return { rarity: "Epic", color: 0x800080 };
+		if (roll < 25) return { rarity: "Rare", color: 0x0000ff };
+		if (roll < 50) return { rarity: "Uncommon", color: 0x00ff00 };
+		return { rarity: "Common", color: 0x808080 };
+	}
+
+	incrementCaught(rarity) {
+		if (!this.caughtRarities[rarity]) {
+			this.caughtRarities[rarity] = 0;
+		}
+		this.caughtRarities[rarity]++;
+		console.log("Caught so far:", this.caughtRarities);
+	}
+
+	showPopup(text) {
+		const popup = document.getElementById("fishPopup");
+		if (!popup) return;
+		popup.innerText = text;
+		popup.style.opacity = 1;
+		popup.style.display = "block";
+		setTimeout(() => {
+			popup.style.opacity = 0;
+			setTimeout(() => {
+				popup.style.display = "none";
+			}, 500);
+		}, 2000);
+	}
+
+	createPopupUI() {
+		const popup = document.createElement("div");
+		popup.id = "fishPopup";
+		Object.assign(popup.style, {
+			position: "absolute",
+			top: "20px",
+			left: "50%",
+			transform: "translateX(-50%)",
+			padding: "10px 20px",
+			background: "rgba(0,0,0,0.7)",
+			color: "white",
+			fontSize: "18px",
+			borderRadius: "10px",
+			display: "none",
+			zIndex: 999,
+			transition: "opacity 0.5s ease",
+		});
+		document.body.appendChild(popup);
+	}
+
+	spawnFish(fishType) {
 		const fishGroup = new THREE.Group();
 
-		// Fish body (oval shape)
 		const bodyGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-		bodyGeometry.scale(1.5, 1, 1); // Stretch into an oval
-		const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0xffaa00 }); // Orange
+		bodyGeometry.scale(1.5, 1, 1);
+		const bodyMaterial = new THREE.MeshBasicMaterial({ color: fishType.color });
 		const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
 		fishGroup.add(body);
 
-		// Fish tail (triangle shape)
 		const tailGeometry = new THREE.BufferGeometry();
 		const tailVertices = new Float32Array([
-			0,
-			0.3,
-			0, // Top
-			-0.3,
-			-0.3,
-			0, // Bottom left
-			0.3,
-			-0.3,
-			0, // Bottom right
+			0, 0.3, 0,
+			-0.3, -0.3, 0,
+			0.3, -0.3, 0,
 		]);
 		tailGeometry.setAttribute(
 			"position",
 			new THREE.BufferAttribute(tailVertices, 3)
 		);
 		const tailMaterial = new THREE.MeshBasicMaterial({
-			color: 0xff5500,
+			color: fishType.color,
 			side: THREE.DoubleSide,
 		});
 		const tail = new THREE.Mesh(tailGeometry, tailMaterial);
-		tail.position.set(-0.8, 0, 0); // Position behind the body
+		tail.position.set(-0.8, 0, 0);
 		fishGroup.add(tail);
 
-		// Position fish at the end of the fishing line
 		const playerRotation = this.player.mesh.rotation.y;
 		const pos = new THREE.Vector3().copy(this.player.mesh.position);
-		pos.y = 0.5; // Water level
+		pos.y = 0.5;
 		pos.x -= Math.sin(playerRotation) * 10;
 		pos.z -= Math.cos(playerRotation) * 10;
 		fishGroup.position.copy(pos);
