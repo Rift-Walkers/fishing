@@ -1,21 +1,3 @@
-# Fishing
-
-Initial Goals:
-3/19
-
-3/26
-
-- Create Supabase to have ready for auth
-- Have a base framework for the application
-  - basic movements, visible environment
-
-4/2
-
-4/9
-
-4/16
-
-
 # 🎣 Krish - A Simple Web-Based Fishing Game
 
 Welcome to **Krish**, a fun and casual fishing game built for the web. Players cast a line, catch various types of fish (some common, some rare), and collect them in their personal inventory. Future expansions may include quests, loot systems, or trading mechanics.
