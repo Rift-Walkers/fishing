@@ -1,21 +1,3 @@
-# Fishing
-
-Initial Goals:
-3/19
-
-3/26
-
-- Create Supabase to have ready for auth
-- Have a base framework for the application
-  - basic movements, visible environment
-
-4/2
-
-4/9
-
-4/16
-
-
 # 🎣 Krish - A Simple Web-Based Fishing Game
 
 Welcome to **Krish**, a fun and casual fishing game built for the web. Players cast a line, catch various types of fish (some common, some rare), and collect them in their personal inventory. Future expansions may include quests, loot systems, or trading mechanics.
@@ -53,8 +35,15 @@ Basic entities:
 
 ## 🛠 System Design Sketch
 
-Simple web stack:
-    Frontend (React + Tailwind) | v Backend (Flask or FastAPI) | v Database (SQLite or PostgreSQL)
+Frontend (React + Tailwind) | Backend (FastAPI) | Database (PostgreSQL)
+
+|     Software/Service    | Free Tier Details                             | Paid Costs After Free Tier                         |
+|-------------------------|-----------------------------------------------|----------------------------------------------------|
+| PostgreSQL             | Supabase: 500MB; AWS RDS: 20GB SSD + t2.micro | $25/month (Supabase Pro); ~$15/month (AWS RDS)    |
+| AWS S3                 | 5GB storage + free requests                   | $0.023/GB/month; alternatives cheaper             |
+| Redis                  | Upstash: Free up to 10K requests/day          | $5–$10/month depending on usage                   |
+| Backend Framework      | FastAPI/Express.js are free                   | No additional cost                                |
+| Hosting                | AWS EC2 t2.micro free (750 hours)             | ~$5–$10/month on VPS after free tier              |
 
 
 - Cast a line → Randomized result from backend
