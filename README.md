@@ -7,7 +7,7 @@ Initial Goals:
 
 - Create Supabase to have ready for auth
 - Have a base framework for the application
-  - basic movements, visable environment
+  - basic movements, visible environment
 
 4/2
 
