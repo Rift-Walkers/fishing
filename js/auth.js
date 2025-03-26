@@ -1,27 +1,42 @@
-import { supabaseClient } from "./supabaseClient.js";
-
-export async function registerUser() {
-	const email = document.getElementById("registerEmail").value;
-	const password = document.getElementById("registerPassword").value;
-	const { user, error } = await supabaseClient.auth.signUp({ email, password });
-	if (error) {
-		alert("Registration Error: " + error.message);
-	} else {
-		alert("Registration successful!");
+async function registerUser(email, password) {
+	try {
+		const response = await fetch("http://localhost:8000/register", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ username: email, password, email }),
+		});
+		const data = await response.json();
+		if (data.message) {
+			console.log("User created successfully");
+		} else {
+			console.error("Registration failed");
+		}
+	} catch (error) {
+		console.error("Error registering:", error);
 	}
 }
 
-export async function loginUser() {
-	const email = document.getElementById("loginEmail").value;
-	const password = document.getElementById("loginPassword").value;
-	const { data, error } = await supabaseClient.auth.signInWithPassword({
-		email,
-		password,
-	});
-	if (error) {
-		alert("Login Error: " + error.message);
-		return false;
+async function loginUser(email, password) {
+	try {
+		const response = await fetch("http://localhost:8000/login", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: `grant_type=password&username=${email}&password=${password}`,
+		});
+		const data = await response.json();
+		if (data.access_token) {
+			localStorage.setItem("token", data.access_token);
+			// Proceed with logged-in state
+		} else {
+			console.error("Login failed");
+		}
+	} catch (error) {
+		console.error("Error logging in:", error);
 	}
-	alert("Login successful!");
-	return true;
 }
+
+export { registerUser, loginUser };
