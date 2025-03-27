@@ -1,0 +1,3 @@
+to run server: main.py (FastAPI)
+    uvicorn main:app --reload
+

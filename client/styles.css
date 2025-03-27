@@ -1,0 +1,70 @@
+body {
+	margin: 0;
+	overflow: hidden;
+}
+
+/* Styling for login/register forms and leaderboard */
+#login,
+#register {
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	background: rgba(255, 255, 255, 0.9);
+	padding: 10px;
+	border-radius: 4px;
+	z-index: 10;
+}
+
+#register {
+	top: 200px;
+}
+
+#gameContainer {
+	width: 100vw;
+	height: 100vh;
+}
+
+/* leaderboard */
+/* Centered leaderboard styling */
+#leaderboard {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 40%;
+	max-width: 500px;
+	background: rgba(42, 107, 42, 0.8);
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+	text-align: center;
+	display: none;
+	color: white;
+	font-family: Arial, sans-serif;
+}
+
+/* Leaderboard title */
+#leaderboard h3 {
+	margin: 0;
+	margin-bottom: 15px;
+	padding: 10px;
+	background: #1c3e1c; /* Darker green for the heading */
+	color: white;
+	border-radius: 4px;
+	font-size: 1.5rem;
+}
+
+/* Leaderboard list */
+#leaderboard ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#leaderboard li {
+	background: rgba(255, 255, 255, 0.1);
+	margin: 5px 0;
+	padding: 10px;
+	border-radius: 4px;
+	font-size: 1rem;
+}

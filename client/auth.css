@@ -1,0 +1,108 @@
+/* --- BODY RESET & BACKGROUND --- */
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+	padding: 0;
+	font-family: "Arial", sans-serif;
+	color: #fff;
+	background: #1b1f2a; /* Dark background color */
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+/* --- CONTAINER FOR CENTERING CONTENT --- */
+.auth-container {
+	text-align: center;
+	width: 100%;
+	max-width: 600px;
+	margin: 0 auto;
+}
+
+/* --- BRAND NAME PLACEHOLDER --- */
+.brand-name {
+	font-size: 2rem;
+	margin-bottom: 1rem;
+	color: #ffffff;
+	letter-spacing: 1px;
+}
+
+/* --- AUTH BOXES (LOGIN / REGISTER) --- */
+.auth-box {
+	background: #2b2f3a; /* Slightly lighter dark color */
+	padding: 2rem;
+	border-radius: 8px;
+	width: 100%;
+	max-width: 400px;
+	margin: 0 auto;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+	display: none; /* Hidden by default; shown selectively with JS */
+}
+
+.auth-box h2 {
+	margin-bottom: 1rem;
+}
+
+/* Show the login box by default */
+#loginBox {
+	display: block;
+}
+
+/* --- FORM ELEMENTS --- */
+.auth-box form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+.auth-box input {
+	padding: 0.75rem;
+	border: none;
+	border-radius: 4px;
+	outline: none;
+	font-size: 1rem;
+}
+.auth-box input::placeholder {
+	color: #999;
+}
+.auth-box button {
+	padding: 0.75rem;
+	border: none;
+	border-radius: 4px;
+	background-color: #4a90e2; /* Example button color */
+	color: #fff;
+	font-size: 1rem;
+	cursor: pointer;
+}
+.auth-box button:hover {
+	background-color: #357ab8; /* Darken on hover */
+}
+
+/* --- LINKS --- */
+.forgot-password {
+	display: inline-block;
+	margin-top: 0.5rem;
+	text-decoration: none;
+	color: #fff;
+	opacity: 0.8;
+	font-size: 0.9rem;
+}
+.forgot-password:hover {
+	opacity: 1;
+}
+
+.toggle-link {
+	margin-top: 1rem;
+	font-size: 0.9rem;
+	opacity: 0.8;
+}
+.toggle-link a {
+	color: #4a90e2;
+	text-decoration: none;
+	font-weight: bold;
+}
+.toggle-link a:hover {
+	text-decoration: underline;
+}
