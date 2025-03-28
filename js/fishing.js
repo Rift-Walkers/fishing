@@ -11,7 +11,7 @@ export class Fishing {
 		this.fishCaught = false;
 		this.fish = null;
 
-		this.caughtRarities = {}; // Track how many of each rarity
+		this.caughtRarities = {};
 
 		this.setupKeyListener();
 		this.createPopupUI();
@@ -107,7 +107,7 @@ export class Fishing {
 
 		const fishType = this.getRandomFishType();
 		this.incrementCaught(fishType.rarity);
-		this.showPopup(`You caught a ${fishType.rarity} fish!`);
+		this.showPopup(`🎣 You caught a ${fishType.rarity} ${fishType.name}!`);
 
 		this.fish = this.spawnFish(fishType);
 		const targetY = 5;
@@ -130,11 +130,51 @@ export class Fishing {
 
 	getRandomFishType() {
 		const roll = Math.random() * 100;
-		if (roll < 2) return { rarity: "Legendary", color: 0xffd700 };
-		if (roll < 10) return { rarity: "Epic", color: 0x800080 };
-		if (roll < 25) return { rarity: "Rare", color: 0x0000ff };
-		if (roll < 50) return { rarity: "Uncommon", color: 0x00ff00 };
-		return { rarity: "Common", color: 0x808080 };
+		let rarity = "Common";
+		if (roll < 2) rarity = "Legendary";
+		else if (roll < 10) rarity = "Epic";
+		else if (roll < 25) rarity = "Rare";
+		else if (roll < 50) rarity = "Uncommon";
+
+		const namePool = {
+			Common: [
+				"Bubblebelly", "Mossfin", "Pebbletail", "Mudgleam", "Snagglefish",
+				"Swampskipper", "Drizzlefin", "Slimescale", "Twigjaw", "Puddlepoke"
+			],
+			Uncommon: [
+				"Glimmerscale", "Flickerfin", "Bogshadow", "Twilight Carp", "Blazegill",
+				"Splashmancer", "Needlenose", "Fae Trout", "Barkbass", "Frostmuck"
+			],
+			Rare: [
+				"Stormjaw", "Voltarra", "Icewhisker", "Glowfin", "Duskscale",
+				"Lavacod", "Crysteel", "Shadowlurker", "Ember Pike", "Phantomfin"
+			],
+			Epic: [
+				"Spectralfin", "Tempest Ray", "Voidtail", "Nether Trout", "Solarflare Eel",
+				"Shimmercrab", "Aetherfin", "Ancient Chest"
+			],
+			Legendary: [
+				"Leviathan of Light", "Abyssal Doomscale", "Celestial Serpent",
+				"Worldfin", "Eternal Chest"
+			]
+		};
+
+		const colors = {
+			Common: 0x808080,
+			Uncommon: 0x00ff00,
+			Rare: 0x0000ff,
+			Epic: 0x800080,
+			Legendary: 0xffd700
+		};
+
+		const fishNames = namePool[rarity];
+		const fishName = fishNames[Math.floor(Math.random() * fishNames.length)];
+
+		return {
+			rarity,
+			name: fishName,
+			color: colors[rarity]
+		};
 	}
 
 	incrementCaught(rarity) {
@@ -174,7 +214,7 @@ export class Fishing {
 			borderRadius: "10px",
 			display: "none",
 			zIndex: 999,
-			transition: "opacity 0.5s ease",
+			transition: "opacity 0.5s ease"
 		});
 		document.body.appendChild(popup);
 	}
@@ -192,7 +232,7 @@ export class Fishing {
 		const tailVertices = new Float32Array([
 			0, 0.3, 0,
 			-0.3, -0.3, 0,
-			0.3, -0.3, 0,
+			0.3, -0.3, 0
 		]);
 		tailGeometry.setAttribute(
 			"position",
@@ -200,7 +240,7 @@ export class Fishing {
 		);
 		const tailMaterial = new THREE.MeshBasicMaterial({
 			color: fishType.color,
-			side: THREE.DoubleSide,
+			side: THREE.DoubleSide
 		});
 		const tail = new THREE.Mesh(tailGeometry, tailMaterial);
 		tail.position.set(-0.8, 0, 0);
