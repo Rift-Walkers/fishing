@@ -1,19 +1,18 @@
 import { startGame } from "./lake.js";
 import { loginUser, registerUser } from "./auth.js";
-import { loadLeaderboard } from "./leaderBoard.js";
-import { supabaseClient } from "./supabaseClient.js";
+// import { loadLeaderboard } from "./leaderBoard.js";
 import { createFishJournalUI, toggleFishJournal } from "./journal.js";
-
 
 document.addEventListener("DOMContentLoaded", () => {
 	if (localStorage.getItem("isLoggedIn") === "true") {
 		setTimeout(startGame, 0);
+		setTimeout(createFishJournalUI, 0);
 		setTimeout(initializeChat, 0);
 	}
 
 	const loginBtn = document.getElementById("loginBtn");
 	const registerBtn = document.getElementById("registerBtn");
-	const leaderboard = document.getElementById("leaderboard");
+	// const leaderboard = document.getElementById("leaderboard");
 
 	if (loginBtn) {
 		loginBtn.addEventListener("click", async () => {
@@ -29,38 +28,37 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 	}
-	
+
 	document.addEventListener("keydown", (e) => {
 		if (e.key.toLowerCase() === "j") {
 			toggleFishJournal();
 		}
 	});
-	
+
 	if (registerBtn) {
 		registerBtn.addEventListener("click", async () => {
 			await registerUser();
 		});
 	}
 
-	leaderboard.style.display = "none";
+	// leaderboard.style.display = "none";
 
-	document.addEventListener("keydown", (e) => {
-		if (e.key === "Tab") {
-			e.preventDefault();
-			leaderboard.style.display = "block";
-			loadLeaderboard();
-		}
-	});
+	// document.addEventListener("keydown", (e) => {
+	// 	if (e.key === "Tab") {
+	// 		e.preventDefault();
+	// 		leaderboard.style.display = "block";
+	// 		loadLeaderboard();
+	// 	}
+	// });
 
-	document.addEventListener("keyup", (e) => {
-		if (e.key === "Tab") {
-			leaderboard.style.display = "none";
-		}
-	});
+	// document.addEventListener("keyup", (e) => {
+	// 	if (e.key === "Tab") {
+	// 		leaderboard.style.display = "none";
+	// 	}
+	// });
 
 	function initializeChat() {
 		let chatActive = false;
-
 		const chatInput = document.createElement("input");
 		chatInput.type = "text";
 		chatInput.placeholder = "Type your message...";
@@ -98,40 +96,48 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 		document.body.appendChild(chatBox);
 
-		async function loadMessages() {
-			const { data, error } = await supabaseClient
-				.from("messages")
-				.select("*")
-				.order("timestamp", { ascending: false })
-				.limit(10);
+		// async function loadMessages() {
+		//   try {
+		// 	const response = await fetch("http://localhost:8000/messages?limit=10");
+		// 	if (!response.ok) {
+		// 	  console.error("Failed to load messages");
+		// 	  return;
+		// 	}
+		// 	const data = await response.json();
+		// 	chatBox.innerHTML = "";
+		// 	data.forEach((msg) => {
+		// 	  const div = document.createElement("div");
+		// 	  const time = new Date(msg.timestamp).toLocaleTimeString();
+		// 	  div.textContent = `[${time}] ${msg.user_email}: ${msg.message}`;
+		// 	  chatBox.appendChild(div);
+		// 	});
+		//   } catch (error) {
+		// 	console.error("Error loading messages:", error);
+		//   }
+		// }
 
-			if (error) return console.error(error);
-
-			chatBox.innerHTML = "";
-			data.forEach((msg) => {
-				const div = document.createElement("div");
-				const time = new Date(msg.timestamp).toLocaleTimeString();
-				div.textContent = `[${time}] ${msg.user_email}: ${msg.message}`;
-				chatBox.appendChild(div); // append instead of prepend due to column-reverse
-			});
-		}
-
-		setInterval(loadMessages, 5000);
-		loadMessages();
+		// setInterval(loadMessages, 5000);
+		// loadMessages();
 
 		async function sendMessage(text) {
-			const { data: userData } = await supabaseClient.auth.getUser();
-			if (!userData.user) return;
-
-			const { error } = await supabaseClient.from("messages").insert([
-				{
-					message: text,
-					user_email: userData.user.email,
-				},
-			]);
-
-			if (error) return console.error(error);
-			loadMessages();
+			const user_email = localStorage.getItem("user_email");
+			if (!user_email) {
+				console.error("User not logged in");
+				return;
+			}
+			try {
+				const response = await fetch("http://localhost:8000/messages", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ user_email, message: text }),
+				});
+				if (!response.ok) {
+					console.error("Error sending message");
+				}
+				loadMessages();
+			} catch (error) {
+				console.error("Error sending message:", error);
+			}
 		}
 
 		document.addEventListener("keydown", (e) => {
