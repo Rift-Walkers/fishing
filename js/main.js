@@ -2,6 +2,8 @@ import { startGame } from "./lake.js";
 import { loginUser, registerUser } from "./auth.js";
 import { loadLeaderboard } from "./leaderBoard.js";
 import { supabaseClient } from "./supabaseClient.js";
+import { createFishJournalUI, toggleFishJournal } from "./journal.js";
+
 
 document.addEventListener("DOMContentLoaded", () => {
 	if (localStorage.getItem("isLoggedIn") === "true") {
@@ -22,11 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
 				document.getElementById("login").style.display = "none";
 				document.getElementById("register").style.display = "none";
 				setTimeout(startGame, 0);
+				setTimeout(createFishJournalUI, 0);
 				setTimeout(initializeChat, 0);
 			}
 		});
 	}
-
+	
+	document.addEventListener("keydown", (e) => {
+		if (e.key.toLowerCase() === "j") {
+			toggleFishJournal();
+		}
+	});
+	
 	if (registerBtn) {
 		registerBtn.addEventListener("click", async () => {
 			await registerUser();

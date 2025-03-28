@@ -106,7 +106,7 @@ export class Fishing {
 		this.fishCaught = true;
 
 		const fishType = this.getRandomFishType();
-		this.incrementCaught(fishType.rarity);
+		this.incrementCaught(fishType.rarity, fishType.name);
 		this.showPopup(`🎣 You caught a ${fishType.rarity} ${fishType.name}!`);
 
 		this.fish = this.spawnFish(fishType);
@@ -177,11 +177,16 @@ export class Fishing {
 		};
 	}
 
-	incrementCaught(rarity) {
+	incrementCaught(rarity, name) {
 		if (!this.caughtRarities[rarity]) {
 			this.caughtRarities[rarity] = 0;
 		}
 		this.caughtRarities[rarity]++;
+
+		// Track in global collection
+		window.fishCollection = window.fishCollection || [];
+		window.fishCollection.push({ name, rarity });
+
 		console.log("Caught so far:", this.caughtRarities);
 	}
 
