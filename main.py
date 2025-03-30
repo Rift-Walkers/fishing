@@ -15,10 +15,10 @@ load_dotenv()
 
 # PostgreSQL connection using Railway DATABASE_URL
 DATABASE_URL = os.getenv("DATABASE_URL")  # Ensure this is set on Railway
-# engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL)
 
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
 # Pydantic models for request bodies
 class User(BaseModel):
@@ -37,7 +37,7 @@ class UserModel(Base):
     password = Column(String)
 
 # Create the tables if they don't exist
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 # FastAPI app instance
 app = FastAPI()
