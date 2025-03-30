@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -13,25 +13,23 @@ from pydantic import BaseModel
 # Load environment variables
 load_dotenv()
 
-# PostgreSQL connection
-DATABASE_URL = os.getenv("DATABASE_URL")
+# PostgreSQL connection using Railway DATABASE_URL
+DATABASE_URL = os.getenv("DATABASE_URL")  # Ensure this is set on Railway
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
-# Define the User model
+# Pydantic models for request bodies
 class User(BaseModel):
     email: str
     password: str
-
 
 class UserLogin(BaseModel):
     email: str
     password: str
 
-
+# SQLAlchemy model for user authentication
 class UserModel(Base):
     __tablename__ = "user_auth"
     id = Column(Integer, primary_key=True)
@@ -41,12 +39,14 @@ class UserModel(Base):
 # Create the tables if they don't exist
 Base.metadata.create_all(bind=engine)
 
-# FastAPI app
+# FastAPI app instance
 app = FastAPI()
 
 # CORS configuration
 origins = [
-    "http://127.0.0.1:5500",  # Allow requests from this origin
+    "http://http://127.0.0.1:5500",
+    "http://localhost:5500",
+    # Add your production URL(s) here too if you deploy the client elsewhere
 ]
 
 app.add_middleware(
@@ -57,10 +57,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# OAuth2 scheme
+# OAuth2 configuration
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# Function to get a database session
+# Dependency to get DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -68,32 +68,30 @@ def get_db():
     finally:
         db.close()
 
-# Function to verify password
+# Simple password verification (use a secure method in production)
 def verify_password(plain_password, hashed_password):
-    # For simplicity, this example uses plain text passwords.
-    # In a real application, use a secure method like bcrypt.
     return plain_password == hashed_password
 
-# Function to get user by username
-def get_user(db, username):
-    return db.query(User).filter(User.username == username).first()
+# Updated function to get user by email from the Railway PostgreSQL database
+def get_user(db, email: str):
+    return db.query(UserModel).filter(UserModel.email == email).first()
 
-# Function to authenticate user
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
+# Authenticate user using the email and password provided
+def authenticate_user(db, email: str, password: str):
+    user = get_user(db, email)
     if not user:
         return False
     if not verify_password(password, user.password):
         return False
     return user
 
-# Function to create access token
+# Function to create a JWT access token
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=60)  # Default expiration
+        expire = datetime.utcnow() + timedelta(minutes=60)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, "secret_key_here", algorithm="HS256")
     return encoded_jwt
@@ -101,7 +99,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 # Login endpoint
 @app.post("/login")
 async def login(user: UserLogin, db: SessionLocal = Depends(get_db)):
-    user_record = db.query(UserModel).filter(UserModel.email == user.email).first()
+    user_record = get_user(db, user.email)
     if not user_record:
         raise HTTPException(
             status_code=401,
@@ -114,16 +112,16 @@ async def login(user: UserLogin, db: SessionLocal = Depends(get_db)):
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=60)  # Token expires in 1 hour
+    access_token_expires = timedelta(minutes=60)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-    
-# Register endpoint
+
+# Register endpoint that creates a new user in Railway PostgreSQL DB
 @app.post("/register")
 async def register(user: User, db: SessionLocal = Depends(get_db)):
-    existing_user = db.query(UserModel).filter(UserModel.email == user.email).first()
+    existing_user = get_user(db, user.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already exists")
     
@@ -133,15 +131,22 @@ async def register(user: User, db: SessionLocal = Depends(get_db)):
     db.refresh(new_user)
     return {"message": "User created successfully"}
 
-# Protected route example
+# Exception for invalid credentials
+credentials_exception = HTTPException(
+    status_code=401,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+# Protected endpoint that returns the authenticated user's email
 @app.get("/users/me")
 async def read_users_me(token: str = Depends(oauth2_scheme), db: SessionLocal = Depends(get_db)):
     try:
         payload = jwt.decode(token, "secret_key_here", algorithms=["HS256"])
-        username: str = payload.get("sub")
-        if username is None:
+        email: str = payload.get("sub")
+        if email is None:
             raise credentials_exception
-        user = get_user(db, username)
+        user = get_user(db, email)
         if user is None:
             raise HTTPException(
                 status_code=401,
@@ -160,4 +165,4 @@ async def read_users_me(token: str = Depends(oauth2_scheme), db: SessionLocal = 
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return {"username": user.username}
+    return {"email": user.email}
