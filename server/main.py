@@ -117,7 +117,7 @@ async def login(user: UserLogin, db: SessionLocal = Depends(get_db)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-# Register endpoint that creates a new user in Railway PostgreSQL DB
+# Register endpoint
 @app.post("/register")
 async def register(user: User, db: SessionLocal = Depends(get_db)):
     existing_user = get_user(db, user.email)
@@ -130,14 +130,7 @@ async def register(user: User, db: SessionLocal = Depends(get_db)):
     db.refresh(new_user)
     return {"message": "User created successfully"}
 
-# Exception for invalid credentials
-credentials_exception = HTTPException(
-    status_code=401,
-    detail="Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"},
-)
-
-# Protected endpoint that returns the authenticated user's email
+# Protected route to get current user info
 @app.get("/users/me")
 async def read_users_me(token: str = Depends(oauth2_scheme), db: SessionLocal = Depends(get_db)):
     try:
@@ -165,3 +158,22 @@ async def read_users_me(token: str = Depends(oauth2_scheme), db: SessionLocal = 
             headers={"WWW-Authenticate": "Bearer"},
         )
     return {"email": user.email}
+
+# Basic root route for testing
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI is running"}
+
+# Exception for credential issues
+credentials_exception = HTTPException(
+    status_code=401,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+# Entry point for Railway (only used when running `python main.py`)
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting FastAPI on port {port}")
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
