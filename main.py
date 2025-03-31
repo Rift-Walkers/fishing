@@ -43,11 +43,11 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 # CORS configuration
-origins = ["*"]
+# origins = 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -171,6 +171,6 @@ credentials_exception = HTTPException(
 # Entry point for Railway (only used when running `python main.py`)
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", "8080"))
     print(f"Starting FastAPI on port {port}")
     uvicorn.run("main:app", host="0.0.0.0", port=port)
