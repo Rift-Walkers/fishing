@@ -116,7 +116,7 @@ export class Fishing {
 				this.fish.position.y += 0.1;
 				requestAnimationFrame(animateFish);
 			} else {
-				updateLeaderboard("player1", 1);
+				// updateLeaderboard("player1", 1);
 				if (this.fish) {
 					this.scene.remove(this.fish);
 					this.fish = null;

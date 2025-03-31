@@ -4,9 +4,9 @@ import { initMultiplayer, updateMultiplayer } from "./multiplayer.js";
 import { generateHouses } from "./houses.js"; // Import houses
 
 export function startGame() {
+	console.log("✅ startGame called");
 	const scene = new THREE.Scene();
 
-	// Set up the camera
 	const camera = new THREE.PerspectiveCamera(
 		75,
 		window.innerWidth / window.innerHeight,
