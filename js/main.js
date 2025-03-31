@@ -1,7 +1,6 @@
 import { startGame } from "./lake.js";
 import { loginUser, registerUser } from "./auth.js";
-import { loadLeaderboard } from "./leaderBoard.js";
-import { supabaseClient } from "./supabaseClient.js";
+// import { loadLeaderboard } from "./leaderBoard.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 	if (localStorage.getItem("isLoggedIn") === "true") {

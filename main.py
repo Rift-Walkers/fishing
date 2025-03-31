@@ -43,12 +43,14 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 # CORS configuration
-# origins = 
+origins = [
+    "http://127.0.0.1:5500/"
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

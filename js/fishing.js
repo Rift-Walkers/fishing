@@ -1,4 +1,4 @@
-import { updateLeaderboard } from "./leaderBoard.js";
+// import { updateLeaderboard } from "./leaderBoard.js";
 
 export class Fishing {
 	constructor(scene, player, camera) {
