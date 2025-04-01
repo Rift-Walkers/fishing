@@ -1,6 +1,6 @@
 # 🎣 Krish - A Simple Web-Based Fishing Game
 
-Welcome to **Krish**, a fun and casual fishing game built for the web. Players cast a line, catch various types of fish (some common, some rare), and collect them in their personal inventory. Future expansions may include quests, loot systems, or trading mechanics.
+Krish is a simple web-based fishing game designed to encourage exploration—both in the game and in real life. Each fish caught comes with a small, optional challenge meant to gently push players to try something new, step outside routine, or see things from a different perspective.
 
 ---
 
