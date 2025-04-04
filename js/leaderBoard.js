@@ -1,5 +1,3 @@
-// import { supabaseClient } from "./supabaseClient.js";
-
 // export async function updateLeaderboard(user_id, weight) {
 // 	const { data, error } = await supabaseClient
 // 		.from("leaderboard")
