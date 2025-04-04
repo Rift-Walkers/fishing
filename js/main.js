@@ -2,12 +2,13 @@ import { startGame } from "./lake.js";
 import { loginUser, registerUser } from "./auth.js";
 // import { loadLeaderboard } from "./leaderBoard.js";
 import { createFishJournalUI, toggleFishJournal } from "./journal.js";
-// import { loadLeaderboard } from "./leaderBoard.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("DOM loaded");
 	localStorage.setItem("isLoggedIn", "true");
+
 	setTimeout(startGame, 0);
+	setTimeout(createFishJournalUI, 0); // ⬅️ Show journal popup
 });
 
 const loginBtn = document.getElementById("loginBtn");
@@ -26,6 +27,7 @@ if (loginBtn) {
 			document.getElementById("register").style.display = "none";
 			setTimeout(startGame, 0);
 			setTimeout(initializeChat, 0);
+			setTimeout(createFishJournalUI, 0);
 		}
 	});
 }
@@ -38,19 +40,28 @@ if (registerBtn) {
 	});
 }
 
-leaderboard.style.display = "none";
+if (leaderboard) {
+	leaderboard.style.display = "none";
 
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Tab") {
+			e.preventDefault();
+			leaderboard.style.display = "block";
+			// loadLeaderboard(); // Enable if leaderboard is implemented
+		}
+	});
+
+	document.addEventListener("keyup", (e) => {
+		if (e.key === "Tab") {
+			leaderboard.style.display = "none";
+		}
+	});
+}
+
+// 🔥 Fish Journal Toggle
 document.addEventListener("keydown", (e) => {
-	if (e.key === "Tab") {
-		e.preventDefault();
-		leaderboard.style.display = "block";
-		loadLeaderboard();
-	}
-});
-
-document.addEventListener("keyup", (e) => {
-	if (e.key === "Tab") {
-		leaderboard.style.display = "none";
+	if (e.key.toLowerCase() === "j") {
+		toggleFishJournal();
 	}
 });
 
@@ -94,41 +105,16 @@ function initializeChat() {
 	});
 	document.body.appendChild(chatBox);
 
+	// Placeholder chat polling (can uncomment and implement when ready)
 	// async function loadMessages() {
-	// 	const { data, error } = await supabaseClient
-	// 		.from("messages")
-	// 		.select("*")
-	// 		.order("timestamp", { ascending: false })
-	// 		.limit(10);
-
-	// 	if (error) return console.error(error);
-
-	// 	chatBox.innerHTML = "";
-	// 	data.forEach((msg) => {
-	// 		const div = document.createElement("div");
-	// 		const time = new Date(msg.timestamp).toLocaleTimeString();
-	// 		div.textContent = `[${time}] ${msg.user_email}: ${msg.message}`;
-	// 		chatBox.appendChild(div); // append instead of prepend due to column-reverse
-	// 	});
+	// 	...
 	// }
-
-	setInterval(loadMessages, 5000);
-	loadMessages();
-
 	// async function sendMessage(text) {
-	// 	const { data: userData } = await supabaseClient.auth.getUser();
-	// 	if (!userData.user) return;
-
-	// 	const { error } = await supabaseClient.from("messages").insert([
-	// 		{
-	// 			message: text,
-	// 			user_email: userData.user.email,
-	// 		},
-	// 	]);
-
-	// 	if (error) return console.error(error);
-	// 	loadMessages();
+	// 	...
 	// }
+
+	// setInterval(loadMessages, 5000);
+	// loadMessages();
 
 	document.addEventListener("keydown", (e) => {
 		if (e.key === "Enter" && !chatActive) {
@@ -140,7 +126,7 @@ function initializeChat() {
 			e.preventDefault();
 			const message = chatInput.value.trim();
 			if (message.length > 0) {
-				sendMessage(message);
+				// sendMessage(message); // Uncomment when implemented
 				chatInput.value = "";
 			} else {
 				chatActive = false;
