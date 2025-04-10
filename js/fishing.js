@@ -10,13 +10,49 @@ export class Fishing {
 		this.fishingStartTime = null;
 		this.fishCaught = false;
 		this.fish = null;
-
 		this.caughtRarities = {};
 
+		// ─── Setup Daily Persistent State ─────────────────────────────
+		this.today = new Date().toISOString().slice(0, 10); // e.g., "2025-04-10"
+		this.catchOfTheDay = this.getCatchOfTheDay(); // Always a Common fish from our pool
+		this.catchBonusRemaining = 0; // Number of bonus casts remaining (2x odds)
+		// Initialize daily state only once
+		this.initDailyState();
+
+		// ─── Initialize Event Listeners & UI ───────────────────────────
 		this.setupKeyListener();
-		this.createPopupUI();
+		this.createPopupUI(); // Creates catch popup, bonus tracker, and CoTD banner
+		this.updateCotdCheckmark(); // Ensures checkmark is hidden unless CoTD was caught
+		this.updateBonusTracker();
 	}
 
+	// ─── DAILY STATE MANAGEMENT ─────────────────────────────────────────
+	initDailyState() {
+		// Retrieve saved state from localStorage
+		const data = JSON.parse(localStorage.getItem("fishingGameState")) || {};
+		if (data.date !== this.today) {
+			// New day: reset state
+			this.castsToday = 0;
+			this.cotdCaught = false;
+			this.catchBonusRemaining = 0;
+		} else {
+			// Restore saved state
+			this.castsToday = data.castsToday || 0;
+			this.cotdCaught = data.cotdCaught || false;
+			this.catchBonusRemaining = data.catchBonusRemaining || 0;
+		}
+	}
+
+	saveDailyState() {
+		localStorage.setItem("fishingGameState", JSON.stringify({
+			date: this.today,
+			castsToday: this.castsToday,
+			cotdCaught: this.cotdCaught,
+			catchBonusRemaining: this.catchBonusRemaining
+		}));
+	}
+
+	// ─── EVENT LISTENERS ────────────────────────────────────────────────────
 	setupKeyListener() {
 		document.addEventListener("keydown", (e) => {
 			if (e.key.toLowerCase() === "f" && !this.isFishing) {
@@ -34,6 +70,7 @@ export class Fishing {
 		});
 	}
 
+	// ─── START FISHING ─────────────────────────────────────────────────────
 	startFishing() {
 		const playerPos = this.player.mesh.position;
 		const playerRotation = this.player.mesh.rotation.y;
@@ -66,6 +103,7 @@ export class Fishing {
 		this.fishCaught = false;
 		this.fishingStartTime = Date.now();
 
+		// Draw the fishing line
 		const start = new THREE.Vector3().copy(this.player.mesh.position);
 		const end = new THREE.Vector3(
 			start.x - Math.sin(playerRotation) * 10,
@@ -78,6 +116,7 @@ export class Fishing {
 		this.scene.add(this.fishingLine);
 	}
 
+	// ─── UPDATE LOOP ───────────────────────────────────────────────────────
 	update() {
 		if (this.isFishing) {
 			const playerRotation = this.player.mesh.rotation.y;
@@ -90,7 +129,6 @@ export class Fishing {
 			if (this.fishingLine) {
 				this.fishingLine.geometry.setFromPoints([start, end]);
 			}
-
 			const elapsed = (Date.now() - this.fishingStartTime) / 1000;
 			if (elapsed >= 5 && !this.fishCaught) {
 				this.catchFish();
@@ -98,6 +136,7 @@ export class Fishing {
 		}
 	}
 
+	// ─── HANDLE FISH CATCH ───────────────────────────────────────────────────
 	catchFish() {
 		if (this.fishingLine) {
 			this.scene.remove(this.fishingLine);
@@ -105,9 +144,30 @@ export class Fishing {
 		}
 		this.fishCaught = true;
 
-		const fishType = this.getRandomFishType();
+		// Increment casts
+		this.castsToday++;
+		let fishType = this.getRandomFishType();
+
+		// Force CoTD on 10th cast if not yet caught
+		if (this.castsToday === 10 && !this.cotdCaught) {
+			fishType = { rarity: "Common", name: this.catchOfTheDay, color: 0x808080 };
+		}
+
 		this.incrementCaught(fishType.rarity, fishType.name);
-		this.showPopup(`🎣 You caught a ${fishType.rarity} ${fishType.name}!`);
+
+		let catchText = `🎣 You caught a ${fishType.rarity} ${fishType.name}!`;
+
+		// If this catch is the CoTD and it hasn’t been caught yet...
+		if (fishType.name === this.catchOfTheDay && !this.cotdCaught) {
+			this.cotdCaught = true;
+			this.catchBonusRemaining = 5; // Activate bonus for 5 casts
+			catchText += " 🌟 It's the Catch of the Day! 2x odds for 5 casts!";
+			this.updateCotdCheckmark(); // Show checkmark on CoTD banner
+			this.updateBonusTracker(); // Update bonus tracker display
+		}
+
+		this.saveDailyState(); // Persist state changes
+		this.showPopup(catchText);
 
 		this.fish = this.spawnFish(fishType);
 		const targetY = 5;
@@ -116,7 +176,6 @@ export class Fishing {
 				this.fish.position.y += 0.1;
 				requestAnimationFrame(animateFish);
 			} else {
-				// updateLeaderboard("player1", 1);
 				if (this.fish) {
 					this.scene.remove(this.fish);
 					this.fish = null;
@@ -128,9 +187,24 @@ export class Fishing {
 		animateFish();
 	}
 
+	// ─── DETERMINE FISH TYPE, APPLYING BONUS IF ACTIVE ─────────────────────
 	getRandomFishType() {
-		const roll = Math.random() * 100;
+		let roll = Math.random() * 100;
 		let rarity = "Common";
+
+		// If bonus casts are active, apply 2x odds
+		if (this.catchBonusRemaining > 0) {
+			roll /= 2;
+			this.catchBonusRemaining--;
+			this.updateBonusTracker();
+			console.log(`🎁 Bonus active! Casts left: ${this.catchBonusRemaining}`);
+		}
+
+		// Force CoTD catch on 10th cast if not yet caught
+		if (this.castsToday === 10 && !this.cotdCaught) {
+			return { rarity: "Common", name: this.catchOfTheDay, color: 0x808080 };
+		}
+
 		if (roll < 2) rarity = "Legendary";
 		else if (roll < 10) rarity = "Epic";
 		else if (roll < 25) rarity = "Rare";
@@ -170,41 +244,40 @@ export class Fishing {
 		const fishNames = namePool[rarity];
 		const fishName = fishNames[Math.floor(Math.random() * fishNames.length)];
 
-		return {
-			rarity,
-			name: fishName,
-			color: colors[rarity]
-		};
+		return { rarity, name: fishName, color: colors[rarity] };
 	}
 
+	// ─── TRACK CAUGHT FISH (for journal) ─────────────────────────────────────
 	incrementCaught(rarity, name) {
 		if (!this.caughtRarities[rarity]) {
 			this.caughtRarities[rarity] = 0;
 		}
 		this.caughtRarities[rarity]++;
-
-		// Track in global collection
 		window.fishCollection = window.fishCollection || [];
 		window.fishCollection.push({ name, rarity });
-
 		console.log("Caught so far:", this.caughtRarities);
 	}
 
+	// ─── DISPLAY POPUP FOR CATCHES ───────────────────────────────────────────
 	showPopup(text) {
 		const popup = document.getElementById("fishPopup");
 		if (!popup) return;
 		popup.innerText = text;
 		popup.style.opacity = 1;
 		popup.style.display = "block";
-		setTimeout(() => {
+		clearTimeout(this.popupTimeout);
+		// Display message for 4 seconds, then fade out
+		this.popupTimeout = setTimeout(() => {
 			popup.style.opacity = 0;
 			setTimeout(() => {
 				popup.style.display = "none";
 			}, 500);
-		}, 2000);
+		}, 4000);
 	}
 
+	// ─── CREATE UI ELEMENTS: POPUP, BONUS TRACKER, & CoTD BANNER ─────────────
 	createPopupUI() {
+		// Create catch popup
 		const popup = document.createElement("div");
 		popup.id = "fishPopup";
 		Object.assign(popup.style, {
@@ -222,11 +295,64 @@ export class Fishing {
 			transition: "opacity 0.5s ease"
 		});
 		document.body.appendChild(popup);
+
+		// Create bonus tracker display
+		const bonus = document.createElement("div");
+		bonus.id = "bonusTracker";
+		Object.assign(bonus.style, {
+			position: "absolute",
+			top: "45px",
+			right: "20px",
+			color: "#ffcc00",
+			fontSize: "14px",
+			display: "none",
+			zIndex: 999
+		});
+		document.body.appendChild(bonus);
+
+		// Create Catch of the Day banner with checkmark indicator
+		const cotd = document.createElement("div");
+		cotd.id = "cotdDisplay";
+		// Initially the checkmark span is set to "none"
+		cotd.innerHTML = `🎯 Catch of the Day: <strong>${this.catchOfTheDay}</strong> <span id="cotdCheck" style="display:none;">✅</span>`;
+		Object.assign(cotd.style, {
+			position: "absolute",
+			top: "10px",
+			right: "20px",
+			background: "rgba(0,0,0,0.6)",
+			color: "white",
+			padding: "8px 12px",
+			borderRadius: "10px",
+			fontSize: "14px",
+			zIndex: 999
+		});
+		document.body.appendChild(cotd);
 	}
 
+	// ─── UPDATE THE BONUS TRACKER UI ─────────────────────────────────────────
+	updateBonusTracker() {
+		const tracker = document.getElementById("bonusTracker");
+		if (!tracker) return;
+		if (this.catchBonusRemaining > 0) {
+			tracker.innerText = `🔥 2x Odds: ${this.catchBonusRemaining} cast${this.catchBonusRemaining === 1 ? "" : "s"} left`;
+			tracker.style.display = "block";
+		} else {
+			tracker.style.display = "none";
+		}
+	}
+
+	// ─── UPDATE THE CoTD CHECKMARK ─────────────────────────────────────────────
+	updateCotdCheckmark() {
+		const check = document.getElementById("cotdCheck");
+		if (check) {
+			// Show checkmark only if cotdCaught is true
+			check.style.display = this.cotdCaught ? "inline" : "none";
+		}
+	}
+
+	// ─── SPAWN THE FISH MODEL IN THE SCENE ─────────────────────────────────────
 	spawnFish(fishType) {
 		const fishGroup = new THREE.Group();
-
 		const bodyGeometry = new THREE.SphereGeometry(0.5, 16, 16);
 		bodyGeometry.scale(1.5, 1, 1);
 		const bodyMaterial = new THREE.MeshBasicMaterial({ color: fishType.color });
@@ -239,10 +365,7 @@ export class Fishing {
 			-0.3, -0.3, 0,
 			0.3, -0.3, 0
 		]);
-		tailGeometry.setAttribute(
-			"position",
-			new THREE.BufferAttribute(tailVertices, 3)
-		);
+		tailGeometry.setAttribute("position", new THREE.BufferAttribute(tailVertices, 3));
 		const tailMaterial = new THREE.MeshBasicMaterial({
 			color: fishType.color,
 			side: THREE.DoubleSide
@@ -260,5 +383,17 @@ export class Fishing {
 
 		this.scene.add(fishGroup);
 		return fishGroup;
+	}
+
+	// ─── DETERMINE TODAY'S CATCH OF THE DAY (Always from Common Pool) ──────────
+	getCatchOfTheDay() {
+		const commonFish = [
+			"Bubblebelly", "Mossfin", "Pebbletail", "Mudgleam", "Snagglefish",
+			"Swampskipper", "Drizzlefin", "Slimescale", "Twigjaw", "Puddlepoke"
+		];
+		const today = new Date().toISOString().slice(0, 10);
+		const hash = [...today].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+		const index = hash % commonFish.length;
+		return commonFish[index];
 	}
 }
